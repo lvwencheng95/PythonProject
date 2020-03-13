@@ -206,7 +206,8 @@ xmls_path = 'D:\\developmentSoft\\pythonWorkspace\\trainInfo\\'
 train_name_xlsx = xmls_path + xmls_name
 
 # 注意更换此处内容
-url_query = 'https://kyfw.12306.cn/otn/leftTicket/queryO?leftTicketDTO.train_date=2020-03-11&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=SZQ&purpose_codes=ADULT'
+# 2020/3/12 注意此处内容，query可能发生改变，之前是queryZ，后面又是query
+url_query = 'https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=2020-03-13&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=NVH&purpose_codes=ADULT'
 cookies = 'JSESSIONID=56528D1AD7E7FC3F275582FB65A0A187; RAIL_EXPIRATION=1582830052593; RAIL_DEVICEID=rhC5FZyKo4J2BaH1C7VftKza15SGap2FoZGvYN28oUU6lwpLcuaWlqQEew19BXMjwrDGbVe3kRvpiksLAlIyLYB2WbaP6oUrETbSiCgwgxkpNsUVMkDck4tHCoq8eGQE8_mN6Cegyjhsr5j1cl6Xol4bU4hybYAF; _jc_save_fromStation=%u4E0A%u6D77%2CSHH; _jc_save_toStation=%u6DF1%u5733%2CSZQ; _jc_save_fromDate=2020-03-11; _jc_save_toDate=2020-02-24; _jc_save_wfdc_flag=dc; BIGipServerotn=99615242.64545.0000; BIGipServerpool_passport=216859146.50215.0000; route=6f50b51faa11b987e576cdb301e545c4'
 # 获取车站代码与车站名称
 dic_station_code_and_name = get_station_name_code().copy()

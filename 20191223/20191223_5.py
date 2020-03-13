@@ -66,7 +66,7 @@ def show_ticket():
     # 获取完成，存放在字典中
     # 本地读取内容
     # 注意更换此处内容
-    url_query = 'https://kyfw.12306.cn/otn/leftTicket/queryZ?leftTicketDTO.train_date=2020-01-23&leftTicketDTO.from_station=WHN&leftTicketDTO.to_station=SHH&purpose_codes=ADULT'
+    url_query = 'https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=2020-03-13&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=NVH&purpose_codes=ADULT'
     cookies = 'JSESSIONID=6E3CEBE74D8037D5AD40A87AED10575C; RAIL_EXPIRATION=1577248851714; RAIL_DEVICEID=XOLNCis8hBr_3hvhlCqUagaLiAekZrudBOROBm9OthStqgetYm9SArlaelgL43DtRpJxrEzxQhvQEdXoavu-bCe11MUQuWQe8HQhta2F_Ro_WYg1MKhpFYjRqCU44KqZBI0SG5Lr5mDTbSXLl6cNb5cxjyTaGxAr; _jc_save_fromStation=%u6B66%u6C49%2CWHN; _jc_save_toStation=%u4E0A%u6D77%2CSHH; _jc_save_fromDate=2020-01-23; _jc_save_toDate=2019-12-25; _jc_save_wfdc_flag=dc; BIGipServerotn=1022362122.64545.0000; BIGipServerpool_passport=267190794.50215.0000; route=6f50b51faa11b987e576cdb301e545c4'
 
     # 获取当前站点代码对应的站点中文名  begin
@@ -92,11 +92,12 @@ def show_ticket():
         # 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'
     }
     response = requests.get(url_query, headers=header)
+    # html，返回一个Json格式
     html = json.loads(response.content)
     # print(html)
     table_top = [" 车次 ", "出发车站", "到达车站", "出发时间", "到达时间", " 历时 "]
-    # list中可以嵌套list
     tickets_excel = list()
+    # list中可以嵌套list
     tickets_excel.append(table_top)
     name = [
         "station_train_code",
