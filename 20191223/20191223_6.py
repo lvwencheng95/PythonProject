@@ -4,8 +4,8 @@
 # @File : 20191223_6.py
 # @Python Version : 3.7.4
 # @Software: PyCharm
-
-from datetime import datetime
+import datetime
+# from datetime import datetime
 from urllib.parse import parse_qsl, urlparse
 
 import requests
@@ -13,6 +13,7 @@ import json
 import urllib3
 import openpyxl
 import prettytable
+from pip._vendor.distlib.compat import raw_input
 
 '''
 --功能描述：
@@ -35,6 +36,12 @@ update history:
                         （3）数据结构：列表、字典的使用
                         
                 缺点：执行效率低。
+    20200313，每次查询站点信息需要打开浏览器，复制查询url、cookies信息，url可进行拼接，而cookies不用替换，使用同一个即可
+                知识点：（1）手动输入起始站、终点站信息，字符串的截取
+                        （2）字符串中存在变量，拼接变量中值
+                        （3）获取当前日期的后一天
+                        （4）程序执行成功返回0，失败返回1
+                字符串中内容操作有很大的依赖。
 '''
 
 
@@ -52,17 +59,20 @@ def write_excel_xlsx(path, sheet_name, value):
     print("xlsx格式表格写入数据成功！")
 
 
-# 读取Excel中内容，参数1：读取excel中的路径；参数2：
+# 读取Excel中内容，参数1：excel中的路径；参数2：具体工作表(sheet)
 def read_excel_xlsx(path, sheet_name):
     workbook = openpyxl.load_workbook(path)
     # sheet = wb.get_sheet_by_name(sheet_name)这种方式已经弃用，不建议使用
     sheet = workbook[sheet_name]
+    # 对行进行循环
     for row in sheet.rows:
+        # 对某行的列进行循环
         for cell in row:
             print(cell.value, "\t", end="")
         print()
 
 
+# 获取车站名称及代码
 def get_station_name_code():
     # 获取当前站点代码对应的站点中文名  begin
     url = 'https://kyfw.12306.cn/otn/resources/js/framework/station_name.js?station_version=1.9130'
@@ -71,19 +81,25 @@ def get_station_name_code():
                                                                                      '').replace(
         "';", '')
     url_tmp = list(url_tmp.split('@'))
-    dct = locals()
+    dct = dict()
+    # 字典中value值为字典
+    # 字典存储，站点-代码（上海-SHH），代码-站点（SHH-上海）
+    dict_station_code = dict()
+    dict_code_station = dict()
     for i in url_tmp:
-        dct[i.split('|')[2]] = i.split('|')[1]
+        dict_code_station[i.split('|')[2]] = i.split('|')[1]
+        dict_station_code[i.split('|')[1]] = i.split('|')[2]
+    dct['code_station'] = dict_code_station
+    dct['station_code'] = dict_station_code
     return dct
-    # 获取当前站点代码对应的站点中文名  end
 
 
 # 根据页面中信息，解析成json格式，然后返回车次信息
-def show_ticket(url_query_value, cookies_value):
+def show_ticket(url_query_value):
     # 获取完成，存放在字典中
     # 本地读取内容
     header = {
-        'Cookie': cookies_value,
+        'Cookie': 'JSESSIONID=56528D1AD7E7FC3F275582FB65A0A187; RAIL_EXPIRATION=1582830052593; RAIL_DEVICEID=rhC5FZyKo4J2BaH1C7VftKza15SGap2FoZGvYN28oUU6lwpLcuaWlqQEew19BXMjwrDGbVe3kRvpiksLAlIyLYB2WbaP6oUrETbSiCgwgxkpNsUVMkDck4tHCoq8eGQE8_mN6Cegyjhsr5j1cl6Xol4bU4hybYAF; _jc_save_fromStation=%u4E0A%u6D77%2CSHH; _jc_save_toStation=%u6DF1%u5733%2CSZQ; _jc_save_fromDate=2020-03-11; _jc_save_toDate=2020-02-24; _jc_save_wfdc_flag=dc; BIGipServerotn=99615242.64545.0000; BIGipServerpool_passport=216859146.50215.0000; route=6f50b51faa11b987e576cdb301e545c4',
         'Host': 'kyfw.12306.cn',
         "Connection": "keep-alive",
         "X-Requested-With": "XMLHttpRequest",
@@ -138,19 +154,17 @@ def show_ticket(url_query_value, cookies_value):
         # tickets.append(tableTop)
         cont = list()
         cont.append(data)
-        dic_name_code = get_station_name_code()
+        dic_name_code = dict_name_code.get('code_station')
         # 循环的目的，数据处理，对于车次信息，换算成具体的车站名称  lwc,20191223
         for x in cont:
             tmp = []
             for y in name:
                 # 起点站
                 if y == "from_station_name":
-                    # s = color.green(chezhan_names[data["from_station_name"]])
                     s1 = dic_name_code[data["from_station_name"]]
                     tmp.append(s1)
                 # 终点站
                 elif y == "to_station_name":
-                    # s = color.red(chezhan_names[data["to_station_name"]])
                     s1 = dic_name_code[data["to_station_name"]]
                     tmp.append(s1)
                 # 起始时间
@@ -176,7 +190,7 @@ def show_ticket(url_query_value, cookies_value):
     return tickets_excel
 
 
-# 根据url，获取传入参数，本程序中主要获取车次信息
+# 根据url，获取传入参数，本程序中主要获取车次信息,工作表(sheet)的名称
 def get_code_from_url(url_query_value):
     str_qsl = parse_qsl(urlparse(url_query).query)
     # 定义一个空的字典
@@ -197,32 +211,52 @@ def get_code_from_url(url_query_value):
 # 车次信息输出Excel的路径
 # 每次由于指定输出文件，由于打开，导致执行程序报错，因此根据时间作为文件名称  lwc,20191225
 # 生成文件名
-str_now_time = datetime.now().__format__('_%Y%m%d_%H%M_%S')
+str_now_time = datetime.datetime.now().__format__('_%Y%m%d_%H%M_%S')
 # 文件名
 xmls_name = 'train_info' + str_now_time + '.xlsx'
 # 存放路径
 xmls_path = 'D:\\developmentSoft\\pythonWorkspace\\trainInfo\\'
 # 拼接后的Excle路径以及名称
 train_name_xlsx = xmls_path + xmls_name
+print(train_name_xlsx)
 
+# 手动输入站点信息，起始站、终点站
+# 手动收入起始站，终点站
+strInput = raw_input("请输入起始站，终点站（空格分隔）：")
+strInputList = list()
+# 空格没有全角和半角之分
+# print(strInput.find(' '))
+if strInput.find(' ') > 0:
+    strInputList = strInput.split(' ')
+else:
+    print('输入格式有误')
+    exit(1)
+dict_name_code = get_station_name_code()
+
+from_station_code_temp = dict_name_code.get('station_code').get(strInputList[0])
+to_station_code_temp = dict_name_code.get('station_code').get(strInputList[1])
+# exit(1)
+if from_station_code_temp is None or to_station_code_temp is None:
+    print('输入站点信息有误，请检查')
+    # 0正常退出，1异常退出
+    exit(1)
+str_now_time = (datetime.datetime.now() + datetime.timedelta(days=+1)).strftime("%Y-%m-%d")
 # 注意更换此处内容
 # 2020/3/12 注意此处内容，query可能发生改变，之前是queryZ，后面又是query
-url_query = 'https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=2020-03-13&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=NVH&purpose_codes=ADULT'
-cookies = 'JSESSIONID=56528D1AD7E7FC3F275582FB65A0A187; RAIL_EXPIRATION=1582830052593; RAIL_DEVICEID=rhC5FZyKo4J2BaH1C7VftKza15SGap2FoZGvYN28oUU6lwpLcuaWlqQEew19BXMjwrDGbVe3kRvpiksLAlIyLYB2WbaP6oUrETbSiCgwgxkpNsUVMkDck4tHCoq8eGQE8_mN6Cegyjhsr5j1cl6Xol4bU4hybYAF; _jc_save_fromStation=%u4E0A%u6D77%2CSHH; _jc_save_toStation=%u6DF1%u5733%2CSZQ; _jc_save_fromDate=2020-03-11; _jc_save_toDate=2020-02-24; _jc_save_wfdc_flag=dc; BIGipServerotn=99615242.64545.0000; BIGipServerpool_passport=216859146.50215.0000; route=6f50b51faa11b987e576cdb301e545c4'
+url_query = 'https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=%s&leftTicketDTO.from_station=%s&leftTicketDTO.to_station=%s&purpose_codes=ADULT' % (str_now_time, from_station_code_temp, to_station_code_temp)
 # 获取车站代码与车站名称
-dic_station_code_and_name = get_station_name_code().copy()
+# dic_station_code_and_name = get_station_name_code().copy()
 # 获取url中的车站代码
-dic_station_code = get_code_from_url(url_query).copy()
+# dic_station_code = get_code_from_url(url_query).copy()
 
 # 工作表名称
 # sheet_name_xlsx = 'tab_1'
-sheet_name_xlsx = dic_station_code_and_name[dic_station_code['from_station_code']] + "_" + dic_station_code_and_name[
-    dic_station_code['to_station_code']]
+sheet_name_xlsx = strInputList[0] + "_" + strInputList[1]
 # print(sheet_name_xlsx)
 
 # 开始调用函数
 # 1、获取页面中的数据，并提取车次信息并返回
-value3 = show_ticket(url_query, cookies)
+value3 = show_ticket(url_query)
 
 # 2、将获取到的数据写入Excel中，若需要读取Excel中的内容，则放开第3步的代码
 # 注意事项，打开excel后，允许此程序则会报错 ，写入 20191224
@@ -230,4 +264,4 @@ value3 = show_ticket(url_query, cookies)
 write_excel_xlsx(train_name_xlsx, sheet_name_xlsx, value3)
 
 # 3、读取Excel
-# read_excel_xlsx(book_name_xlsx, sheet_name_xlsx)
+# read_excel_xlsx(train_name_xlsx, sheet_name_xlsx)
