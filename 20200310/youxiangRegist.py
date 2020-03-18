@@ -49,7 +49,7 @@ header = {
     # 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'
 }
 url_query = 'https://reg.mail.163.com/unireg/call.do?cmd=urs.checkName'
-mailNameList = read_excel_xlsx('E:\\123456.xlsx', 'Sheet1')
+mailNameList = read_excel_xlsx('E:\\pythonTestFile\\123456.xlsx', 'Sheet1')
 if len(mailNameList) < 1:
     print('excel中不存在内容')
     exit(1)

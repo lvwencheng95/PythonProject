@@ -15,7 +15,10 @@ import openpyxl
 
 def read_excel_xlsx_return_list(path, sheet_name):
     xlsx_list = list()
+    # 加载excel文档
     workbook = openpyxl.load_workbook(path)
+    # 创建一个excel文档
+    # workbook = openpyxl.workbook(path)
     # sheet = wb.get_sheet_by_name(sheet_name)这种方式已经弃用，不建议使用
     sheet = workbook[sheet_name]
     # 对行进行循环
@@ -47,8 +50,14 @@ def read_excel_xlsx_return_dict(path, sheet_name):
 # 注意事项：如果执行代码前打开该Excel，则执行代码会报错
 def write_excel_xlsx(path, sheet_name, value):
     index = len(value)
-    workbook = openpyxl.Workbook()
-    sheet = workbook.active
+    # 使用Workbook()方法会进行新建一个，然后保存会覆盖之前的
+    # workbook = openpyxl.Workbook()
+    # 使用load_workbook打开已有的
+    workbook = openpyxl.load_workbook(path)
+    # 默认会获取第一个sheet
+    # sheet = workbook.active
+    # 创建一个sheet，并进行命名
+    sheet = workbook.create_sheet()
     sheet.title = sheet_name
     i = 1
     for value_key in value:
@@ -74,12 +83,12 @@ def write_excel_xlsx(path, sheet_name, value):
 """
 
 # 获取单个汉字对应的拼音
-dic = read_excel_xlsx_return_dict('E:\\dataDictionary.xlsx', 'dictionary')
+dic = read_excel_xlsx_return_dict('E:\\pythonTestFile\\dataDictionary.xlsx', 'dictionary')
 # print(dic)
 dic_name = dict()
 # 获取中中文名称
 # 若需要读取则在此处更改文件的位置
-list_name = read_excel_xlsx_return_list('E:\\888.xlsx', 'name')
+list_name = read_excel_xlsx_return_list('E:\\pythonTestFile\\888.xlsx', 'name')
 # 测试
 # list_name = ['马云颍', '吴佳豪']
 # print(list_name)
@@ -102,6 +111,7 @@ xmls_path = 'D:\\developmentSoft\\pythonWorkspace\\nameInfo\\'
 # 拼接后的Excle路径以及名称
 name_xlsx = xmls_path + xmls_name
 print('文件存放路径：  ' + name_xlsx)
+name_xlsx = 'E:\\pythonTestFile\\12345678.xlsx'
 write_excel_xlsx(name_xlsx, 'name_info', dic_name)
 # print(dic_name)
 '''

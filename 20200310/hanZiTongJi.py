@@ -44,7 +44,7 @@ def write_excel_xlsx(path, sheet_name, value):
     print("xlsx格式表格写入数据成功！")
 
 
-file = docx.Document("E:\\234.docx")
+file = docx.Document("E:\\pythonTestFile\\234.docx")
 # print("段落数:"+str(len(file.paragraphs)))
 # #段落数为13，每个回车隔离一段
 # 输出每一段的内容
