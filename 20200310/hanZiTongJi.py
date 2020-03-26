@@ -42,7 +42,7 @@ def write_excel_xlsx(path, sheet_name, value):
         sheet.cell(row=k + 2, column=3, value=dic[k][1])
     workbook.save(path)
     print("xlsx格式表格写入数据成功！")
-
+s
 
 file = docx.Document("E:\\pythonTestFile\\234.docx")
 # print("段落数:"+str(len(file.paragraphs)))
