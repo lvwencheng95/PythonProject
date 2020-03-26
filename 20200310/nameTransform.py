@@ -13,6 +13,7 @@ import datetime
 import openpyxl
 
 
+# 读取excel中内容，使用list结构返回
 def read_excel_xlsx_return_list(path, sheet_name):
     xlsx_list = list()
     # 加载excel文档
@@ -29,6 +30,7 @@ def read_excel_xlsx_return_list(path, sheet_name):
     return xlsx_list
 
 
+# 读取excel中内容，使用dict结构返回
 def read_excel_xlsx_return_dict(path, sheet_name):
     xlsx_list = list()
     workbook = openpyxl.load_workbook(path)
