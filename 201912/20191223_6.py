@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# @Time : 2020/3/13 11:35
+# @Time : 2019/12/25 16:03
 # @Author : 52595
-# @File : queryTrainInfo.py
+# @File : 20191223_6.py
 # @Python Version : 3.7.4
 # @Software: PyCharm
 import datetime
@@ -34,7 +34,7 @@ update history:
                 知识点：（1）解析url,获取传入的参数值
                         （2）日期类使用，获取当前时间
                         （3）数据结构：列表、字典的使用
-
+                        
                 缺点：执行效率低。
     20200313，每次查询站点信息需要打开浏览器，复制查询url、cookies信息，url可进行拼接，而cookies不用替换，使用同一个即可
                 知识点：（1）手动输入起始站、终点站信息，字符串的截取
@@ -155,7 +155,7 @@ def show_ticket(url_query_value):
         cont = list()
         cont.append(data)
         dic_name_code = dict_name_code.get('code_station')
-        # 循环的目的，数据处理，对于车次信息，换算成具体的车站名称  lwc,20191223
+        # 循环的目的，数据处理，对于车次信息，换算成具体的车站名称  lwc,201912
         for x in cont:
             tmp = []
             for y in name:
@@ -218,7 +218,7 @@ xmls_name = 'train_info' + str_now_time + '.xlsx'
 xmls_path = 'D:\\developmentSoft\\pythonWorkspace\\trainInfo\\'
 # 拼接后的Excle路径以及名称
 train_name_xlsx = xmls_path + xmls_name
-print('文件存放路径：  ' + train_name_xlsx)
+print(train_name_xlsx)
 
 # 手动输入站点信息，起始站、终点站
 # 手动收入起始站，终点站
@@ -243,8 +243,7 @@ if from_station_code_temp is None or to_station_code_temp is None:
 str_now_time = (datetime.datetime.now() + datetime.timedelta(days=+1)).strftime("%Y-%m-%d")
 # 注意更换此处内容
 # 2020/3/12 注意此处内容，query可能发生改变，之前是queryZ，后面又是query
-url_query = 'https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=%s&leftTicketDTO.from_station=%s&leftTicketDTO.to_station=%s&purpose_codes=ADULT' % (
-    str_now_time, from_station_code_temp, to_station_code_temp)
+url_query = 'https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=%s&leftTicketDTO.from_station=%s&leftTicketDTO.to_station=%s&purpose_codes=ADULT' % (str_now_time, from_station_code_temp, to_station_code_temp)
 # 获取车站代码与车站名称
 # dic_station_code_and_name = get_station_name_code().copy()
 # 获取url中的车站代码

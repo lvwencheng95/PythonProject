@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
-# @Time : 2020/3/12 11:02
+# @Time : 2019/12/25 15:53
 # @Author : 52595
-# @File : 20200310_4.py
+# @File : 20191223_5.py
 # @Python Version : 3.7.4
 # @Software: PyCharm
-import datetime
+
+from datetime import datetime
+from urllib.parse import parse_qsl, urlparse
 
 import requests
 import json
 import urllib3
 import openpyxl
 import prettytable
-from pip._vendor.distlib.compat import raw_input
 
 '''
 --功能描述：
@@ -49,11 +50,23 @@ def write_excel_xlsx(path, sheet_name, value):
     print("xlsx格式表格写入数据成功！")
 
 
+# 读取Excel中内容，参数1：读取excel中的路径；参数2：
+def read_excel_xlsx(path, sheet_name):
+    workbook = openpyxl.load_workbook(path)
+    # sheet = wb.get_sheet_by_name(sheet_name)这种方式已经弃用，不建议使用
+    sheet = workbook[sheet_name]
+    for row in sheet.rows:
+        for cell in row:
+            print(cell.value, "\t", end="")
+        print()
+
+
 # 根据页面中信息，解析成json格式，然后返回车次信息
 def show_ticket():
     # 获取完成，存放在字典中
     # 本地读取内容
     # 注意更换此处内容
+    url_query = 'https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=2020-03-13&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=NVH&purpose_codes=ADULT'
     cookies = 'JSESSIONID=6E3CEBE74D8037D5AD40A87AED10575C; RAIL_EXPIRATION=1577248851714; RAIL_DEVICEID=XOLNCis8hBr_3hvhlCqUagaLiAekZrudBOROBm9OthStqgetYm9SArlaelgL43DtRpJxrEzxQhvQEdXoavu-bCe11MUQuWQe8HQhta2F_Ro_WYg1MKhpFYjRqCU44KqZBI0SG5Lr5mDTbSXLl6cNb5cxjyTaGxAr; _jc_save_fromStation=%u6B66%u6C49%2CWHN; _jc_save_toStation=%u4E0A%u6D77%2CSHH; _jc_save_fromDate=2020-01-23; _jc_save_toDate=2019-12-25; _jc_save_wfdc_flag=dc; BIGipServerotn=1022362122.64545.0000; BIGipServerpool_passport=267190794.50215.0000; route=6f50b51faa11b987e576cdb301e545c4'
 
     # 获取当前站点代码对应的站点中文名  begin
@@ -63,38 +76,10 @@ def show_ticket():
                                                                                      '').replace(
         "';", '')
     url_tmp = list(url_tmp.split('@'))
-    # 返回字典类型的本地变量
-    # 比如i =5 str ='2'
-    # 使用local()返回，{'i':5 , 'str':'2'}
-    # dict_station = locals()
-    # ---------------------------
-    dict_station = dict()
-    # 手动输入站点，获取对应站点代码
-    dict_station_to_code = dict()
+    dict_station = locals()
     for i in url_tmp:
         dict_station[i.split('|')[2]] = i.split('|')[1]
-        dict_station_to_code[i.split('|')[1]] = i.split('|')[2]
-    # 手动收入起始站，终点站
-    strInput = raw_input("请输入起始站，终点站（空格分隔）：")
-    strInputList = list()
-    # 空格没有全角和半角之分
-    # print(strInput.find(' '))
-    if strInput.find(' ') > 0:
-        strInputList = strInput.split(' ')
-    else:
-        print('输入格式有误')
-        exit(1)
-    # from_station_code = ''
-    # to_station_code = ''
-    # 为何定义dict才能使用has_key
-    # dict = dict_station_to_code
     # 获取当前站点代码对应的站点中文名  end
-    from_station_code = dict_station_to_code.get(strInputList[0])
-    to_station_code = dict_station_to_code.get(strInputList[1])
-    if from_station_code is None or to_station_code is None :
-        print('输入站点信息有误，请检查')
-        # 0正常退出，1异常退出
-        exit(1)
     header = {
         'Cookie': cookies,
         'Host': 'kyfw.12306.cn',
@@ -106,10 +91,6 @@ def show_ticket():
         # Chrome表示谷歌
         # 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'
     }
-    # 后去当前时间的后一天，防止查询车次信息不完整
-    str_now_time = (datetime.datetime.now() + datetime.timedelta(days=+1)).strftime("%Y-%m-%d")
-    url_query = 'https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=%s&leftTicketDTO.from_station=%s&leftTicketDTO.to_station=%s&purpose_codes=ADULT' %(str_now_time, from_station_code, to_station_code)
-    # print(url_query)
     response = requests.get(url_query, headers=header)
     # html，返回一个Json格式
     html = json.loads(response.content)
@@ -156,7 +137,7 @@ def show_ticket():
         # tickets.append(tableTop)
         cont = list()
         cont.append(data)
-        # 循环的目的，数据处理，对于车次信息，换算成具体的车站名称  lwc,20191223
+        # 循环的目的，数据处理，对于车次信息，换算成具体的车站名称  lwc,201912
         for x in cont:
             tmp = []
             for y in name:
@@ -210,3 +191,6 @@ value3 = show_ticket()
 # 注意事项，打开excel后，允许此程序则会报错 ，写入 20191224
 # 文件名称自动生成   20191225
 write_excel_xlsx(train_name_xlsx, sheet_name_xlsx, value3)
+
+# 3、读取Excel
+# read_excel_xlsx(book_name_xlsx, sheet_name_xlsx)
